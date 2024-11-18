@@ -1,13 +1,15 @@
-export const generateMessage = (text) => {
+export const generateMessage = (username, text) => {
     return { 
-        text,
+        text: text,
+        username: username,
         createdAt: new Date().getTime()
     }
 }
 
-export const generateLocationMessage = (url) => {
+export const generateLocationMessage = (url, username) => {
     return {
-        url,
+        username: username,
+        url: url,
         createdAt: new Date().getTime()
     }
 }

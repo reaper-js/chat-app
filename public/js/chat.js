@@ -11,9 +11,13 @@ const $messages = document.querySelector('#messages');
 const messageTemplate = document.querySelector('#message-template').innerHTML;
 const locationMessageTemplate = document.querySelector('#location-message-template').innerHTML;
 
+//options
+const {username, room} = Qs.parse(location.search, {ignoreQueryPrefix: true})
+
 socket.on('message', (message) =>{
     console.log(message)
     const html = Mustache.render(messageTemplate, {
+        username: message.username,
         message: message.text,
         createdAt: moment(message.createdAt).format('h:mm a')
     });
@@ -23,6 +27,7 @@ socket.on('message', (message) =>{
 socket.on('locationMessage', (message) => {
     console.log(message)
     const html = Mustache.render(locationMessageTemplate, {
+        username: message.username,
         url: message.url,
         createdAt: moment(message.createdAt).format('h:mm a')
     });
@@ -34,9 +39,10 @@ $messageForm.addEventListener('submit', (e) => {
     $messageFormButton.setAttribute('disabled', 'disabled');
     const text = e.target.elements.message.value;
     if(!text){
+        $messageFormButton.removeAttribute('disabled');
         document.getElementById('main').innerHTML = 'Please provide a message';
     }else{
-        socket.emit('sendMessage', text, (error) => {
+        socket.emit('sendMessage', {username, text}, (error) => {
             $messageFormButton.removeAttribute('disabled');
             $messageFormInput.value ='';
             $messageFormInput.focus();
@@ -56,8 +62,12 @@ document.querySelector('#send_location').addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition((position) => {
         $locationButton.setAttribute('disabled', 'disabled');
         socket.emit('locationMessage', {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
+            position: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            },
+            username
+            
         }, (error) => {
             $locationButton.removeAttribute('disabled');
             if(error){
@@ -68,3 +78,6 @@ document.querySelector('#send_location').addEventListener('click', () => {
     })
 
 })
+socket.emit('join', {username, room}, (error) => {
+    
+});
